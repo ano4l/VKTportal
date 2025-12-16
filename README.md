@@ -124,6 +124,61 @@ npm run dev
 - `PUT /api/comments/:id` - Update comment
 - `DELETE /api/comments/:id` - Delete comment
 
+## Deployment on Render
+
+### Prerequisites
+- A Render account (sign up at https://render.com)
+- Your GitHub repository connected to Render
+
+### Deployment Steps
+
+1. **Create a new Web Service on Render:**
+   - Go to your Render dashboard
+   - Click "New +" → "Web Service"
+   - Connect your GitHub repository: `https://github.com/ano4l/VKTportal.git`
+
+2. **Configure Build & Start Commands:**
+   - **Build Command:** `yarn install && cd server && yarn install && cd ../client && yarn install && yarn build`
+   - **Start Command:** `yarn start`
+   - **Environment:** `Node`
+
+3. **Set Environment Variables:**
+   Add these in the Render dashboard under "Environment":
+   ```
+   NODE_ENV=production
+   PORT=5000
+   JWT_SECRET=your-secret-key-here
+   CORS_ORIGIN=https://your-app-name.onrender.com
+   DATABASE_PATH=/opt/render/project/src/server/database.sqlite
+   ```
+
+4. **Deploy:**
+   - Click "Create Web Service"
+   - Render will automatically build and deploy your application
+   - Your app will be available at `https://your-app-name.onrender.com`
+
+### Using Yarn Locally
+
+If you prefer using Yarn instead of npm:
+
+```bash
+# Install Yarn globally (if not already installed)
+npm install -g yarn
+
+# Install all dependencies
+yarn install
+cd server && yarn install && cd ../client && yarn install
+
+# Start development
+yarn dev
+
+# Build for production
+yarn build
+
+# Start production server
+yarn start
+```
+
 ## License
 
 © 2025 VirtuKey Technologies. All rights reserved.

@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: virtukey-employee-portal
+    env: node
+    buildCommand: yarn install && cd server && yarn install && cd ../client && yarn install && yarn build
+    startCommand: yarn start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        sync: false
+      - key: DATABASE_PATH
+        value: /opt/render/project/src/server/database.sqlite
+
