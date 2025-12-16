@@ -3,7 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { initDatabase } from './database.js';
+import bcrypt from 'bcryptjs';
+import { initDatabase, dbHelpers } from './database.js';
 import authRoutes from './routes/auth.js';
 import projectRoutes from './routes/projects.js';
 import meetingRoutes from './routes/meetings.js';
@@ -32,6 +33,37 @@ app.use(express.json());
 
 // Initialize database
 initDatabase();
+
+// Auto-seed admin user if it doesn't exist
+async function ensureAdminUser() {
+  try {
+    // Wait a bit for tables to be created
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    const admin = await dbHelpers.get('SELECT * FROM users WHERE email = ?', ['admin@virtukey.co.za']);
+    
+    if (!admin) {
+      // Create admin user
+      const hashedPassword = await bcrypt.hash('password123', 10);
+      await dbHelpers.run(
+        'INSERT INTO users (email, password, name, role) VALUES (?, ?, ?, ?)',
+        ['admin@virtukey.co.za', hashedPassword, 'Admin User', 'admin']
+      );
+      console.log('✓ Admin user created: admin@virtukey.co.za / password123');
+    } else if (admin.role !== 'admin') {
+      // Update existing user to admin if role is wrong
+      await dbHelpers.run('UPDATE users SET role = ? WHERE email = ?', ['admin', 'admin@virtukey.co.za']);
+      console.log('✓ Admin user role updated');
+    } else {
+      console.log('✓ Admin user already exists');
+    }
+  } catch (error) {
+    console.error('Error ensuring admin user:', error);
+  }
+}
+
+// Ensure admin user exists on server start
+ensureAdminUser();
 
 // Routes
 app.use('/api/auth', authRoutes);
