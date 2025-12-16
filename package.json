@@ -7,8 +7,9 @@
     "server": "cd server && npm run dev",
     "client": "cd client && npm run dev",
     "install-all": "npm install && cd server && npm install && cd ../client && npm install",
-    "build": "cd client && npm run build",
-    "start": "npm run build && cd server && npm start"
+    "postinstall": "cd server && yarn install && cd ../client && yarn install",
+    "build": "cd client && yarn build",
+    "start": "yarn build && cd server && yarn start"
   },
   "keywords": [],
   "author": "",
