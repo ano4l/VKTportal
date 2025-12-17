@@ -206,6 +206,36 @@ export function initDatabase() {
     )
   `).catch(err => console.error('Error creating reminders table:', err));
 
+  // Create tasks table
+  run(`
+    CREATE TABLE IF NOT EXISTS tasks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      description TEXT,
+      status TEXT DEFAULT 'pending',
+      priority TEXT DEFAULT 'normal',
+      assigned_to INTEGER NOT NULL,
+      created_by INTEGER NOT NULL,
+      due_date DATETIME,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      completed_at DATETIME,
+      FOREIGN KEY (assigned_to) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (created_by) REFERENCES users(id)
+    )
+  `).catch(err => console.error('Error creating tasks table:', err));
+
+  // Create announcement_targets table for directed announcements
+  run(`
+    CREATE TABLE IF NOT EXISTS announcement_targets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      announcement_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      FOREIGN KEY (announcement_id) REFERENCES announcements(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      UNIQUE(announcement_id, user_id)
+    )
+  `).catch(err => console.error('Error creating announcement_targets table:', err));
+
   console.log('Database initialized');
 }
 

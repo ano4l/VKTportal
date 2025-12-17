@@ -5,6 +5,8 @@ import UserManagement from '../components/UserManagement';
 import AssignmentModal from '../components/AssignmentModal';
 import ProjectManagement from '../components/ProjectManagement';
 import MeetingManagement from '../components/MeetingManagement';
+import TaskManager from '../components/TaskManager';
+import EmployeeProfilesView from '../components/EmployeeProfilesView';
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
@@ -98,12 +100,12 @@ const AdminDashboard = () => {
 
         {/* Tabs */}
         <div className="glass-transparent rounded-xl p-2 mb-6 animate-fade-in animate-delay-200">
-          <nav className="flex space-x-2">
-            {['users', 'projects', 'meetings'].map((tab) => (
+          <nav className="flex flex-wrap gap-2">
+            {['users', 'profiles', 'projects', 'meetings', 'tasks'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-6 py-3 rounded-lg font-medium text-sm transition-all duration-300 capitalize ${
+                className={`px-4 sm:px-6 py-3 rounded-lg font-medium text-sm transition-all duration-300 capitalize ${
                   activeTab === tab
                     ? 'glass text-white scale-105'
                     : 'text-white/70 hover:text-white hover:bg-white/10'
@@ -122,6 +124,12 @@ const AdminDashboard = () => {
           </div>
         )}
 
+        {activeTab === 'profiles' && (
+          <div className="animate-fade-in animate-delay-200">
+            <EmployeeProfilesView />
+          </div>
+        )}
+
         {activeTab === 'projects' && (
           <div className="animate-fade-in animate-delay-200">
             <ProjectManagement projects={projects} onUpdate={fetchData} />
@@ -131,6 +139,12 @@ const AdminDashboard = () => {
         {activeTab === 'meetings' && (
           <div className="animate-fade-in animate-delay-200">
             <MeetingManagement meetings={meetings} onUpdate={fetchData} />
+          </div>
+        )}
+
+        {activeTab === 'tasks' && (
+          <div className="animate-fade-in animate-delay-200">
+            <TaskManager />
           </div>
         )}
       </main>

@@ -14,6 +14,7 @@ import profileRoutes from './routes/profiles.js';
 import announcementRoutes from './routes/announcements.js';
 import requisitionRoutes from './routes/requisitions.js';
 import notesRoutes from './routes/notes.js';
+import taskRoutes from './routes/tasks.js';
 
 dotenv.config();
 
@@ -75,6 +76,7 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/requisitions', requisitionRoutes);
 app.use('/api', notesRoutes);
+app.use('/api/tasks', taskRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

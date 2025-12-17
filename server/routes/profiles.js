@@ -1,5 +1,6 @@
 import express from 'express';
 import { authenticateToken } from '../middleware/auth.js';
+import { requireAdmin } from '../middleware/admin.js';
 import { dbHelpers } from '../database.js';
 
 const router = express.Router();
@@ -99,6 +100,23 @@ router.post('/me', authenticateToken, async (req, res) => {
     res.json(profile);
   } catch (error) {
     console.error('Error saving profile:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get all employee profiles (admin only)
+router.get('/all', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const profiles = await dbHelpers.all(`
+      SELECT ep.*, u.id as user_id, u.name, u.email, u.role, u.created_at as user_created_at
+      FROM users u
+      LEFT JOIN employee_profiles ep ON u.id = ep.user_id
+      WHERE u.role = 'employee'
+      ORDER BY u.name ASC
+    `);
+    res.json(profiles);
+  } catch (error) {
+    console.error('Error fetching all profiles:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

@@ -12,13 +12,18 @@ const AnnouncementsTab = () => {
     title: '',
     content: '',
     priority: 'normal',
-    expires_at: ''
+    expires_at: '',
+    target_user_ids: []
   });
+  const [users, setUsers] = useState([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
     fetchAnnouncements();
-  }, []);
+    if (user?.role === 'admin') {
+      fetchUsers();
+    }
+  }, [user]);
 
   const fetchAnnouncements = async () => {
     try {
@@ -31,14 +36,26 @@ const AnnouncementsTab = () => {
     }
   };
 
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get('/api/admin/users');
+      setUsers(response.data.filter(u => u.role === 'employee'));
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
   const handleCreate = async (e) => {
     e.preventDefault();
     setError('');
 
     try {
-      await axios.post('/api/announcements', formData);
+      await axios.post('/api/announcements', {
+        ...formData,
+        target_user_ids: formData.target_user_ids.length > 0 ? formData.target_user_ids : undefined
+      });
       setShowCreateModal(false);
-      setFormData({ title: '', content: '', priority: 'normal', expires_at: '' });
+      setFormData({ title: '', content: '', priority: 'normal', expires_at: '', target_user_ids: [] });
       fetchAnnouncements();
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to create announcement');
@@ -102,7 +119,7 @@ const AnnouncementsTab = () => {
                   <h4 className="text-lg font-semibold text-white mb-1">
                     {announcement.title}
                   </h4>
-                  <div className="flex items-center gap-4 text-xs text-white/70 mb-3">
+                  <div className="flex items-center gap-4 text-xs text-white/70 mb-3 flex-wrap">
                     <span>By {announcement.created_by_name}</span>
                     <span>•</span>
                     <span>{format(new Date(announcement.created_at), 'MMM dd, yyyy')}</span>
@@ -110,6 +127,12 @@ const AnnouncementsTab = () => {
                       <>
                         <span>•</span>
                         <span>Expires: {format(new Date(announcement.expires_at), 'MMM dd, yyyy')}</span>
+                      </>
+                    )}
+                    {announcement.target_user_ids && announcement.target_user_ids.length > 0 && (
+                      <>
+                        <span>•</span>
+                        <span className="text-gray-300">Directed to {announcement.target_user_ids.length} employee(s)</span>
                       </>
                     )}
                   </div>
@@ -164,6 +187,48 @@ const AnnouncementsTab = () => {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-white/90 mb-2">
+                  Target Employees (Optional - leave empty for all employees)
+                </label>
+                <div className="glass-transparent rounded-xl p-3 max-h-40 overflow-y-auto">
+                  {users.length === 0 ? (
+                    <p className="text-white/70 text-sm">No employees found</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {users.map((user) => (
+                        <label key={user.id} className="flex items-center gap-2 cursor-pointer hover:bg-white/5 p-2 rounded">
+                          <input
+                            type="checkbox"
+                            checked={formData.target_user_ids.includes(user.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setFormData({
+                                  ...formData,
+                                  target_user_ids: [...formData.target_user_ids, user.id]
+                                });
+                              } else {
+                                setFormData({
+                                  ...formData,
+                                  target_user_ids: formData.target_user_ids.filter(id => id !== user.id)
+                                });
+                              }
+                            }}
+                            className="w-4 h-4 rounded"
+                          />
+                          <span className="text-white text-sm">{user.name} ({user.email})</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {formData.target_user_ids.length > 0 && (
+                  <p className="text-white/70 text-xs mt-2">
+                    This announcement will only be visible to {formData.target_user_ids.length} selected employee(s)
+                  </p>
+                )}
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-white/90 mb-2">Priority</label>
@@ -191,7 +256,11 @@ const AnnouncementsTab = () => {
               <div className="flex justify-end space-x-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setFormData({ title: '', content: '', priority: 'normal', expires_at: '', target_user_ids: [] });
+                    setError('');
+                  }}
                   className="glass-button px-4 py-2 text-white rounded-xl hover:scale-105 transition-all duration-300"
                 >
                   Cancel

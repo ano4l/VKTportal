@@ -10,6 +10,7 @@ import RequisitionsTab from '../components/RequisitionsTab';
 import ProjectManagement from '../components/ProjectManagement';
 import MeetingManagement from '../components/MeetingManagement';
 import NotesAndRemindersTab from '../components/NotesAndRemindersTab';
+import TasksTab from '../components/TasksTab';
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -111,7 +112,7 @@ const Dashboard = () => {
         {/* Tabs - Mobile scrollable */}
         <div className="glass-transparent rounded-xl p-1 sm:p-2 mb-4 sm:mb-6 animate-fade-in animate-delay-200 overflow-x-auto">
           <nav className="flex space-x-1 sm:space-x-2 min-w-max sm:min-w-0">
-            {['overview', 'announcements', 'requisitions', 'notes'].map((tab) => (
+            {['overview', 'tasks', 'announcements', 'requisitions', 'notes'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -232,6 +233,12 @@ const Dashboard = () => {
           </div>
         )}
 
+        {activeTab === 'tasks' && (
+          <div className="animate-fade-in animate-delay-200">
+            <TasksTab />
+          </div>
+        )}
+
         {activeTab === 'announcements' && (
           <div className="animate-fade-in animate-delay-200">
             <AnnouncementsTab />
@@ -254,7 +261,7 @@ const Dashboard = () => {
       {/* Mobile Bottom Navigation */}
       <nav className="mobile-menu">
         <div className="flex justify-around items-center">
-          {['overview', 'announcements', 'requisitions', 'notes'].map((tab) => (
+          {['overview', 'tasks', 'announcements', 'requisitions', 'notes'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
