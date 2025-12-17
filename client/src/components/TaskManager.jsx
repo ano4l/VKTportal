@@ -29,9 +29,15 @@ const TaskManager = () => {
         axios.get('/api/admin/users')
       ]);
       setTasks(tasksRes.data);
-      setUsers(usersRes.data.filter(u => u.role === 'employee'));
+      const employeeUsers = usersRes.data.filter(u => u.role === 'employee');
+      setUsers(employeeUsers);
+      
+      if (employeeUsers.length === 0) {
+        setError('No employees found. Please create employee accounts first.');
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
+      setError('Failed to load data. Please check your connection.');
     } finally {
       setLoading(false);
     }
@@ -47,11 +53,18 @@ const TaskManager = () => {
     }
 
     try {
-      await axios.post('/api/tasks', formData);
+      // Convert assigned_to to number
+      const taskData = {
+        ...formData,
+        assigned_to: parseInt(formData.assigned_to, 10),
+        due_date: formData.due_date || null
+      };
+      await axios.post('/api/tasks', taskData);
       setShowCreateModal(false);
       setFormData({ title: '', description: '', status: 'pending', priority: 'normal', assigned_to: '', due_date: '' });
       fetchData();
     } catch (err) {
+      console.error('Task creation error:', err);
       setError(err.response?.data?.error || 'Failed to create task');
     }
   };
@@ -61,11 +74,18 @@ const TaskManager = () => {
     setError('');
 
     try {
-      await axios.put(`/api/tasks/${editingTask.id}`, formData);
+      // Convert assigned_to to number
+      const taskData = {
+        ...formData,
+        assigned_to: parseInt(formData.assigned_to, 10),
+        due_date: formData.due_date || null
+      };
+      await axios.put(`/api/tasks/${editingTask.id}`, taskData);
       setEditingTask(null);
       setFormData({ title: '', description: '', status: 'pending', priority: 'normal', assigned_to: '', due_date: '' });
       fetchData();
     } catch (err) {
+      console.error('Task update error:', err);
       setError(err.response?.data?.error || 'Failed to update task');
     }
   };
@@ -244,19 +264,25 @@ const TaskManager = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-white/90 text-sm font-medium mb-2">Assign To *</label>
-                  <select
-                    value={formData.assigned_to}
-                    onChange={(e) => setFormData({ ...formData, assigned_to: e.target.value })}
-                    className="glass-input w-full px-4 py-2 rounded-lg text-white"
-                    required
-                  >
-                    <option value="">Select employee</option>
-                    {users.map((user) => (
-                      <option key={user.id} value={user.id} className="bg-gray-800">
-                        {user.name} ({user.email})
-                      </option>
-                    ))}
-                  </select>
+                  {users.length === 0 ? (
+                    <div className="glass-transparent border border-yellow-500/50 rounded-lg p-3 text-yellow-300 text-sm">
+                      No employees found. Please create employee accounts first in the Users tab.
+                    </div>
+                  ) : (
+                    <select
+                      value={formData.assigned_to}
+                      onChange={(e) => setFormData({ ...formData, assigned_to: e.target.value })}
+                      className="glass-input w-full px-4 py-2 rounded-lg text-white"
+                      required
+                    >
+                      <option value="">Select employee</option>
+                      {users.map((user) => (
+                        <option key={user.id} value={user.id} className="bg-gray-800">
+                          {user.name} ({user.email})
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
 
                 <div>

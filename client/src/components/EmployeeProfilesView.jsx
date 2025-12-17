@@ -14,10 +14,15 @@ const EmployeeProfilesView = () => {
 
   const fetchProfiles = async () => {
     try {
+      setLoading(true);
       const response = await axios.get('/api/profile/all');
-      setProfiles(response.data);
+      console.log('Fetched profiles:', response.data);
+      setProfiles(response.data || []);
     } catch (error) {
       console.error('Error fetching profiles:', error);
+      console.error('Error details:', error.response?.data);
+      // Set empty array on error so UI shows "no profiles" message
+      setProfiles([]);
     } finally {
       setLoading(false);
     }
@@ -57,7 +62,7 @@ const EmployeeProfilesView = () => {
       <div className="grid gap-4">
         {filteredProfiles.length === 0 ? (
           <div className="glass-transparent rounded-xl p-8 text-center text-white/70">
-            {searchTerm ? 'No employees found matching your search.' : 'No employee profiles found.'}
+            {searchTerm ? 'No employees found matching your search.' : profiles.length === 0 ? 'No employees have registered yet.' : 'No employees found matching your search.'}
           </div>
         ) : (
           filteredProfiles.map((profile) => (
